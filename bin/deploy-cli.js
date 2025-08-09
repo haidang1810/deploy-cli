@@ -487,12 +487,6 @@ async function handleCustomInstall() {
         case 'mongodb':
           await installMongoDB();
           break;
-        case 'nvm':
-          await installNVM();
-          break;
-        case 'nodejs':
-          await installNodeJS();
-          break;
         case 'pm2':
           await installPM2();
           break;
