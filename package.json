@@ -15,8 +15,16 @@
     "server",
     "nginx"
   ],
-  "author": "",
-  "license": "ISC",
+  "author": "Huynh Hai Dang <danghuynh.dev@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/haidang1810/deploy-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/haidang1810/deploy-cli/issues"
+  },
+  "homepage": "https://github.com/haidang1810/deploy-cli#readme",
   "dependencies": {
     "inquirer": "^8.2.6",
     "chalk": "^4.1.2",
