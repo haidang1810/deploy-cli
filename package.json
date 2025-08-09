@@ -1,10 +1,10 @@
 {
-  "name": "deploy-cli",
+  "name": "@haidang1810/deploy-cli",
   "version": "1.0.0",
   "description": "CLI tool để cài đặt server và tạo nginx",
   "main": "index.js",
   "bin": {
-    "deploy-cli": "./bin/deploy-cli.js"
+    "deploy-cli": "bin/deploy-cli.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
