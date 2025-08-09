@@ -124,6 +124,11 @@ async function createStaticFileNginx() {
       }
     ]);
 
+    // Cấp quyền 755 cho thư mục source code
+    console.log(chalk.blue('🔐 Đang cấp quyền cho thư mục source code...'));
+    await execPromise(`sudo chmod 755 ${answers.folderCode}`);
+    console.log(chalk.green('✅ Đã cấp quyền 755 cho thư mục source code'));
+
     const config = generateStaticFileConfig(answers.domain, answers.folderCode);
     await createNginxConfig(answers.domain, config);
     
