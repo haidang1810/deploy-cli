@@ -124,6 +124,11 @@ async function createStaticFileNginx() {
       }
     ]);
 
+    // Cấp quyền 755 cho thư mục source code
+    console.log(chalk.blue('🔐 Đang cấp quyền cho thư mục source code...'));
+    await execPromise(`sudo chmod 755 ${answers.folderCode}`);
+    console.log(chalk.green('✅ Đã cấp quyền 755 cho thư mục source code'));
+
     const config = generateStaticFileConfig(answers.domain, answers.folderCode);
     await createNginxConfig(answers.domain, config);
     
@@ -285,7 +290,7 @@ async function installCompletePackage() {
     
     // Download và chạy script
     const commands = [
-      'curl -L https://gist.githubusercontent.com/haidang1810/ded9c840548571a954c3947074630420/raw/67ef21bb71254fc34b74bacc2774e95973a06075/install_package.sh -o install_package.sh',
+      'curl -L https://gist.githubusercontent.com/haidang1810/9e7bed4054cd04a31ad55d99af900c93/raw/a0d487d52c0cce67e74131a4b491f69b47524371/install_package_nodejs_exist.sh -o install_package_nodejs_exist.sh',
       'chmod +x install_package.sh',
       './install_package.sh'
     ];
@@ -486,12 +491,6 @@ async function handleCustomInstall() {
           break;
         case 'mongodb':
           await installMongoDB();
-          break;
-        case 'nvm':
-          await installNVM();
-          break;
-        case 'nodejs':
-          await installNodeJS();
           break;
         case 'pm2':
           await installPM2();
