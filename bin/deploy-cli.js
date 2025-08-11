@@ -4,7 +4,7 @@ const inquirer = require('inquirer');
 const chalk = require('chalk');
 const fs = require('fs').promises;
 const path = require('path');
-const { exec } = require('child_process');
+const { exec, spawn } = require('child_process');
 const util = require('util');
 const execPromise = util.promisify(exec);
 
@@ -185,8 +185,25 @@ async function createNginxConfig(domain, configContent) {
     console.log(chalk.green.bold(`\n🎉 Tạo nginx config cho ${domain} thành công!`));
     console.log(chalk.yellow(`\n💡 Lưu ý:`));
     console.log(chalk.yellow(`- File config được lưu tại: ${configPath}`));
-    console.log(chalk.yellow(`- Đảm bảo folder source code tồn tại tại: /var/www/`));
-    console.log(chalk.yellow(`- Nếu sử dụng HTTPS, hãy cài đặt SSL certificate`));
+    console.log(chalk.yellow(`- Đảm bảo folder source code tồn tại`));
+    console.log(chalk.yellow(`- Website có thể truy cập qua: http://${domain}`));
+    
+    // Hỏi user có muốn cấp SSL certificate không
+    const sslAnswer = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'installSSL',
+        message: 'Bạn có muốn cấp SSL certificate (HTTPS) cho domain này không?',
+        default: true
+      }
+    ]);
+    
+    if (sslAnswer.installSSL) {
+      await runCertbot(domain);
+    } else {
+      console.log(chalk.yellow('\n💡 Bạn có thể cấp SSL sau bằng lệnh:'));
+      console.log(chalk.cyan(`sudo certbot --nginx -d ${domain}`));
+    }
     
   } catch (error) {
     console.error(chalk.red('\n❌ Lỗi khi tạo nginx config:'), error.message);
@@ -195,6 +212,49 @@ async function createNginxConfig(domain, configContent) {
     console.log(chalk.yellow('- Kiểm tra nginx đã được cài đặt chưa'));
     console.log(chalk.yellow('- Kiểm tra domain đã được sử dụng chưa'));
   }
+}
+
+// Chạy certbot để cấp SSL certificate
+async function runCertbot(domain) {
+  return new Promise((resolve, reject) => {
+    console.log(chalk.blue('\n🔒 Đang chạy Certbot để cấp SSL certificate...'));
+    console.log(chalk.yellow('💡 Lưu ý: Bạn sẽ cần tương tác với Certbot để:'));
+    console.log(chalk.yellow('   - Nhập email (lần đầu tiên)'));
+    console.log(chalk.yellow('   - Đồng ý Terms of Service (Y/N)'));
+    console.log(chalk.yellow('   - Chọn có chia sẻ email với EFF không (Y/N)'));
+    console.log(chalk.yellow('   - Chọn domain cần cấp SSL (nếu có nhiều domain)'));
+    console.log('');
+
+    const certbotProcess = spawn('sudo', ['certbot', '--nginx', '-d', domain], {
+      stdio: 'inherit' // Cho phép user tương tác trực tiếp
+    });
+
+    certbotProcess.on('close', (code) => {
+      if (code === 0) {
+        console.log(chalk.green.bold('\n🎉 Đã cấp SSL certificate thành công!'));
+        console.log(chalk.green(`✅ HTTPS đã được kích hoạt cho ${domain}`));
+        console.log(chalk.yellow('\n💡 Lưu ý:'));
+        console.log(chalk.yellow('- Certificate sẽ tự động gia hạn'));
+        console.log(chalk.yellow('- Kiểm tra website với https://' + domain));
+        resolve();
+      } else {
+        console.log(chalk.red('\n❌ Có lỗi xảy ra khi cấp SSL certificate'));
+        console.log(chalk.yellow('\n💡 Gợi ý:'));
+        console.log(chalk.yellow('- Đảm bảo domain đã trỏ về IP server'));
+        console.log(chalk.yellow('- Kiểm tra nginx config đã được tạo đúng'));
+        console.log(chalk.yellow('- Thử chạy lại: sudo certbot --nginx -d ' + domain));
+        resolve(); // Vẫn resolve để không dừng chương trình
+      }
+    });
+
+    certbotProcess.on('error', (error) => {
+      console.error(chalk.red('\n❌ Lỗi khi chạy certbot:'), error.message);
+      console.log(chalk.yellow('\n💡 Gợi ý:'));
+      console.log(chalk.yellow('- Đảm bảo certbot đã được cài đặt'));
+      console.log(chalk.yellow('- Chạy: sudo snap install --classic certbot'));
+      resolve(); // Vẫn resolve để không dừng chương trình
+    });
+  });
 }
 
 // Xử lý menu create nginx

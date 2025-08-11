@@ -85,6 +85,22 @@ Tạo cấu hình Nginx cho website/ứng dụng. Có 2 loại:
 2. Tạo symbolic link tới `/etc/nginx/sites-enabled/`
 3. Test cấu hình với `nginx -t`
 4. Reload Nginx để áp dụng thay đổi
+5. **Tự động hỏi cấp SSL certificate** (HTTPS) với Certbot
+
+#### 🔒 Tính năng SSL Certificate tự động
+Sau khi tạo nginx config thành công, tool sẽ tự động hỏi bạn có muốn cấp SSL certificate không:
+- **Chọn "Yes"**: Tự động chạy `certbot --nginx -d [domain]`
+- **Tương tác trực tiếp** với Certbot để:
+  - Nhập email (lần đầu tiên sử dụng)
+  - Đồng ý Terms of Service (Y/N)
+  - Chọn có chia sẻ email với EFF không (Y/N)
+  - Chọn domain cần cấp SSL (nếu có nhiều domain)
+- **Chọn "No"**: Hiển thị lệnh để cấp SSL sau này
+
+**Lưu ý về SSL:**
+- Domain phải được trỏ về IP server trước khi cấp SSL
+- Certificate sẽ tự động gia hạn
+- Website sẽ có thể truy cập qua HTTPS sau khi cấp thành công
 
 ### ❌ Thoát
 Thoát khỏi chương trình
