@@ -45,46 +45,50 @@ Sẽ hiển thị menu với các lựa chọn:
 - 🌐 Tạo Nginx
 - ❌ Thoát
 
-## Publish lên npm
+### 🖥️ Cài đặt Server
+Cài đặt các gói phần mềm cần thiết cho server. Có 2 phương thức:
 
-Để người khác có thể cài đặt qua npm:
+#### 📦 Gói tổng hợp (Cài đặt tất cả)
+- Tự động tải và chạy script cài đặt hoàn chỉnh
+- Bao gồm tất cả các gói: Nginx, MongoDB, PM2, Redis, Certbot, cấu hình tường lửa
+- Phù hợp cho việc setup server mới từ đầu
+- Script được tải từ: `https://gist.githubusercontent.com/haidang1810/ded9c840548571a954c3947074630420/raw/67ef21bb71254fc34b74bacc2774e95973a06075/install_package.sh`
 
-1. Đăng ký tài khoản npm (nếu chưa có):
-   ```bash
-   npm adduser
-   ```
+#### 🎯 Tự chọn (Chọn gói cần cài)
+Cho phép chọn từng gói cụ thể để cài đặt:
 
-2. Đăng nhập:
-   ```bash
-   npm login
-   ```
+- **🔥 Cài đặt port tường lửa**: Mở các port cần thiết (22, 21, 20, 80, 443) và kích hoạt UFW
+- **🌐 Cài đặt Nginx**: Web server và reverse proxy, tự động cấu hình tường lửa
+- **🍃 Cài đặt MongoDB**: Database NoSQL phiên bản 4.4, tự động start và enable service
+- **📦 Cài đặt NVM**: Node Version Manager để quản lý nhiều phiên bản Node.js
+- **🚀 Cài đặt PM2**: Process manager cho ứng dụng Node.js, quản lý và monitor app
+- **🔴 Cài đặt Redis**: In-memory database cho caching và session storage
+- **🔒 Cài đặt Certbot**: Tool tự động tạo và gia hạn SSL certificate từ Let's Encrypt
 
-3. Publish package:
-   ```bash
-   npm publish
-   ```
+### 🌐 Tạo Nginx
+Tạo cấu hình Nginx cho website/ứng dụng. Có 2 loại:
 
-4. Sau khi publish, mọi người có thể cài đặt:
-   ```bash
-   npm install -g deploy-cli
-   ```
+#### 🔄 Nginx Proxy Pass (cho ứng dụng Node.js, Python, etc.)
+- Dành cho ứng dụng chạy trên port cụ thể (ví dụ: Node.js app chạy port 3000)
+- Nginx sẽ forward request đến ứng dụng backend
+- Cần nhập: **Port ứng dụng**, **Đường dẫn source code**, **Domain**
+- Tự động cấu hình proxy headers và redirect
 
-## Cách hoạt động
+#### 📁 Nginx Static File (cho website tĩnh)
+- Dành cho website tĩnh (HTML, CSS, JS) hoặc SPA (React, Vue, Angular)
+- Nginx serve trực tiếp các file tĩnh
+- Cần nhập: **Đường dẫn source code**, **Domain**
+- Tự động cấu hình fallback cho SPA routing
 
-Khi cài đặt global qua npm, npm sẽ:
-1. Copy package vào folder global node_modules
-2. Tạo symbolic link từ file `bin/deploy-cli.js` vào folder bin của hệ thống
-3. Điều này cho phép gọi lệnh `deploy-cli` từ bất kỳ đâu
+**Quy trình tạo Nginx config:**
+1. Tạo file config tại `/etc/nginx/sites-available/[domain]`
+2. Tạo symbolic link tới `/etc/nginx/sites-enabled/`
+3. Test cấu hình với `nginx -t`
+4. Reload Nginx để áp dụng thay đổi
 
-## Gỡ cài đặt
+### ❌ Thoát
+Thoát khỏi chương trình
 
-```bash
-# Gỡ cài đặt global
-npm uninstall -g deploy-cli
-
-# Gỡ link local
-npm unlink
-```
 
 ## Cấu trúc dự án
 
@@ -97,11 +101,60 @@ deploy-bash/
 └── .gitignore         # Ignore node_modules
 ```
 
+## Yêu cầu hệ thống
+
+- **Hệ điều hành**: Ubuntu/Debian Linux
+- **Quyền truy cập**: Sudo privileges (để cài đặt packages và cấu hình system)
+- **Node.js**: Phiên bản 14+ (để chạy CLI tool)
+- **Internet**: Kết nối ổn định để tải packages
+
 ## Lưu ý quan trọng
 
-- File `bin/deploy-cli.js` phải có shebang `#!/usr/bin/env node` ở dòng đầu
-- Trong `package.json`, field `bin` phải trỏ đúng đến file thực thi
+### Về CLI Tool
+- File [`bin/deploy-cli.js`](bin/deploy-cli.js:1) phải có shebang `#!/usr/bin/env node` ở dòng đầu
+- Trong [`package.json`](package.json), field `bin` phải trỏ đúng đến file thực thi
 - Khi publish lên npm, tên package phải unique (chưa có ai dùng)
+
+### Về Server Setup
+- **Backup dữ liệu** trước khi chạy script cài đặt
+- Đảm bảo có **quyền sudo** trước khi bắt đầu
+- **Kiểm tra port** không bị conflict với services khác
+- **Domain** phải được trỏ về IP server trước khi tạo Nginx config
+
+### Về Nginx Config
+- Folder source code phải tồn tại trước khi tạo config
+- Với **Proxy Pass**: Ứng dụng phải chạy trên port đã chỉ định
+- Với **Static File**: Folder phải chứa file `index.html`
+- Sau khi tạo config, cần **restart ứng dụng** nếu có thay đổi
+
+## Troubleshooting
+
+### Lỗi thường gặp
+- **Permission denied**: Chạy với `sudo` hoặc kiểm tra quyền file
+- **Port already in use**: Kiểm tra service nào đang sử dụng port
+- **Domain not found**: Đảm bảo DNS đã được cấu hình đúng
+- **Nginx test failed**: Kiểm tra syntax trong file config
+
+### Commands hữu ích
+```bash
+# Kiểm tra status các service
+sudo systemctl status nginx
+sudo systemctl status mongod
+sudo systemctl status redis
+
+# Kiểm tra port đang sử dụng
+sudo netstat -tlnp | grep :80
+sudo netstat -tlnp | grep :443
+
+# Kiểm tra log nginx
+sudo tail -f /var/log/nginx/error.log
+
+# Test nginx config
+sudo nginx -t
+
+# Reload nginx
+sudo systemctl reload nginx
+```
 
 ## License
 
