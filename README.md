@@ -8,7 +8,7 @@ CLI tool để cài đặt server và tạo cấu hình Nginx một cách dễ d
 ```bash
 # Cài đặt global từ npm registry
 npm install -g deploy-cli
-
+# nếu npm được cài bằng nvm nên có nvm use default trước
 # Sau khi cài, có thể gọi từ bất kỳ folder nào
 deploy-cli
 ```
